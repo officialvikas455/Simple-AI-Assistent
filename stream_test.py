@@ -21,7 +21,7 @@ stream = client.chat.completions.create(
     messages = [
         {
             "role": "user",
-            "content": "What is the weather of pune?"
+            "content": "What is the AI"
         }
     ],
     stream=True
@@ -29,12 +29,15 @@ stream = client.chat.completions.create(
 
 full_response = ""
 
+
+
 for chunk in stream:
-    if not chunk.choices[0]:
+    if not chunk.choices:
         continue
-    content = chunk.choices[0].delta.content
-    if content:
-        print(content, end="", flush=True)
-        full_response += content
+    
+    piece = chunk.choices[0].delta.content
+    if piece:
+        print(piece, end="", flush=True) # streaming output to console
+        full_response += piece
 
 print("\n\nFull response:", full_response) # i will send this to LLM for history
