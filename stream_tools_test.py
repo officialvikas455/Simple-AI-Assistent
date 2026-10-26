@@ -35,6 +35,3 @@ for chunk in stream:
     if delta.tool_calls:
         print(delta.tool_calls, end="", flush=True)
 
-
-# print("\nFull response:" ) # i will send this to LLM for history
-# print( full_response) # i will send this to LLM for history

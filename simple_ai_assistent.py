@@ -1,7 +1,6 @@
 
 import os
 from dotenv import load_dotenv
-# pyrefly: ignore [missing-import]
 from openai import OpenAI
 
 # local modules
@@ -61,7 +60,7 @@ while True:
                 messages=messages,
                 tools=TOOLS,
                 tool_choice="auto",
-                stream = True
+                stream=False
             )
         except Exception as e:
             log(f"API request failed: {e}", level="ERROR")
