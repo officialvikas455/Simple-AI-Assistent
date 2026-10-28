@@ -18,6 +18,22 @@ def get_city_weather(city: str):
     response.raise_for_status()
     return response.text.strip()
 
+def search_and_summarize(
+    query: str,
+    max_results: int = 5,
+    focus: str = "general"
+) -> dict:
+    """
+    Search the web and summarize useful information.
+
+    Args:
+        query: Topic to research.
+        max_results: Number of results (1-10).
+        focus: general, technical, latest, or beginner.
+
+    Returns:
+        Search results and a structured summary.
+    """
 
 TOOLS = [
     {
@@ -61,13 +77,29 @@ TOOLS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_and_summarize",
+            "description": "Search the web and summarize useful information",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string"},
+                    "max_results": {"type": "integer"},
+                    "focus": {"type": "string"},
+                },
+                "required": ["query"],
+            },
+        },
+    }
 ]
-
 
 FUNCTION_NAME_TO_FUNCTION_MAP = {
     "get_current_time": get_current_time,
     "calculate_sum": calculate_sum,
     "get_city_weather": get_city_weather,
+    "search_and_summarize": search_and_summarize
 }
 
 
