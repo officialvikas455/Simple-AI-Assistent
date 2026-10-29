@@ -21,7 +21,7 @@ stream = client.chat.completions.create(
     messages = [
         {
             "role": "user",
-            "content": "What is the AI"
+            "content": "What is an AI"
         }
     ],
     stream=True

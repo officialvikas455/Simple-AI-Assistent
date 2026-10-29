@@ -1,4 +1,3 @@
-
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
@@ -17,3 +16,4 @@ response = client.embeddings.create(
 
 for i, emb in enumerate(response.data):
     print(f"Embedding {i} length : {len(emb.embedding)}")
+    print(emb.embedding[:5])
