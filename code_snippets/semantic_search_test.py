@@ -41,4 +41,4 @@ similarity23 = cosine_similarity(embedding2, embedding3)
 
 print("Similarity between text1 and text2 :", similarity12)
 print("Similarity between text1 and text3 :", similarity13)
-print("Similarity between text2 and text3 :", similarity23)2
+print("Similarity between text2 and text3 :", similarity23)

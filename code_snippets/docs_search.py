@@ -3,7 +3,7 @@ import numpy
 from openai import OpenAI
 from dotenv import load_dotenv
 
-load_dotenv() #by default looks for .env file
+load_dotenv()
 
 client = OpenAI(
     base_url=os.getenv("BASE_URL"),
@@ -91,9 +91,10 @@ def test(user_query, documents, top_k=3):
 
 #Let's start testing
 documents = load_documents()
-documents = add_embeddings(documents)
+print(documents[0])
+# documents = add_embeddings(documents)
 
-print(f"We have embedded {len(documents)} documents")
+# print(f"We have embedded {len(documents)} documents")
 
-user_query = "How many days I will get for maternity leave ?"
-test(user_query, documents, 3)
+# user_query = "How many days I will get for maternity leave ?"
+# test(user_query, documents, 3)
