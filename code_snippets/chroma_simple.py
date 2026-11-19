@@ -1,154 +1,69 @@
-
+import os
 import chromadb
+from openai import OpenAI
+from dotenv import load_dotenv
 
-# 1. Initialize ChromaDB
-chroma = chromadb.Client()
+load_dotenv()
 
-# 2. Create or get collection
+client = OpenAI(
+    base_url=os.getenv("BASE_URL"),
+    api_key=os.getenv("API_KEY")
+)
+
+EMBED_MODEL = os.getenv("EMBED_MODEL")
+
+#Get the embedding of a text using EMBED_MODEL
+def get_embedding(text):
+    response = client.embeddings.create(
+        model=EMBED_MODEL,
+        input=text
+    )
+    return response.data[0].embedding
+
+
+chunks = {
+    "c0": "Leave Policy - Maternity Leave\nMaternity leave is 26 weeks of paid leave for the first two children.",
+    "c1": "Medical Policy - Maternity Cover\nHospitalization for childbirth is covered up to 75,000 rupees.",
+    "c2": "Travel Expense - Reimbursement\nSubmit expense claims within 30 days of the trip. Approved claims are reimbursed within 7 working days.",
+    "c3": "Tech Docs - Deployment Windows\nProduction deployments are allowed on Tuesdays and Thursdays between 11 AM and 4 PM.",
+}
+
+ids = list(chunks.keys())
+documents = list(chunks.values())
+
+embeddings = []
+for s in documents:
+    embedding = get_embedding(s)
+    embeddings.append(embedding)
+
+
+chroma = chromadb.PersistentClient(path="./chromadbStorage")
+
 zorvex_collection = chroma.get_or_create_collection(
-    name="zorvex_collection"
-)
-
-# 3. Prepare documents
-documents = [
-    {
-        "id": "leave_maternity",
-        "category": "leave_policy",
-        "title": "Maternity Leave",
-        "content": """
-        Maternity Leave Policy:
-        Employees are eligible for 26 weeks of paid leave
-        for the first two children and 12 weeks for the
-        third child.
-
-        Leave can be availed in one go or multiple spells.
-        The policy states that leave can be availed by
-        the mother or father. Verify this eligibility
-        wording against the official HR policy.
-        """
-    },
-    {
-        "id": "leave_paternity",
-        "category": "leave_policy",
-        "title": "Paternity Leave",
-        "content": """
-        Paternity Leave Policy:
-        Employees are eligible for 15 days of paid leave
-        for the first two children and 7 days for the
-        third child.
-
-        This leave can be availed by the father of the
-        child in one go or multiple spells.
-        """
-    },
-    {
-        "id": "leave_sick",
-        "category": "leave_policy",
-        "title": "Sick Leave",
-        "content": """
-        Sick Leave Policy:
-        Employees receive 12 days of paid sick leave
-        per year.
-
-        Leave can be used for the employee's own illness
-        or the illness of a family member.
-        Leave can be taken in one go or multiple spells.
-        """
-    },
-    {
-        "id": "leave_casual",
-        "category": "leave_policy",
-        "title": "Casual Leave",
-        "content": """
-        Casual Leave Policy:
-        Employees receive 12 days of paid casual leave
-        per year for personal reasons.
-        Leave can be taken in one go or multiple spells.
-        """
-    },
-    {
-        "id": "leave_earned",
-        "category": "leave_policy",
-        "title": "Earned Leave",
-        "content": """
-        Earned Leave Policy:
-        Employees receive 30 days of paid earned leave
-        per year for personal reasons.
-        Leave can be taken in one go or multiple spells.
-        """
-    },
-    {
-        "id": "medical_policy",
-        "category": "medical_policy",
-        "title": "Medical Insurance and Reimbursement",
-        "content": """
-        Medical Policy:
-        Covers employee medical benefits, health insurance,
-        hospitalization, medical claims, reimbursement
-        procedures, eligible expenses, dependent coverage
-        and claim submission.
-        """
-    },
-    {
-        "id": "travel_expense",
-        "category": "travel_expense",
-        "title": "Travel and Expense Policy",
-        "content": """
-        Travel and Expense Policy:
-        Covers official business travel, travel approval,
-        flight and train bookings, hotel accommodation,
-        food allowances, local transportation, expense
-        reimbursement and supporting bill requirements.
-        """
-    },
-    {
-        "id": "tech_docs",
-        "category": "tech_docs",
-        "title": "Technical Documentation",
-        "content": """
-        Technical Documentation:
-        Covers technical architecture, APIs, Python
-        applications, databases, authentication, deployment,
-        configuration, troubleshooting, integrations
-        and development guidelines.
-        """
-    }
-]
-
-# 4. Insert documents into ChromaDB
-zorvex_collection.upsert(
-    ids=[doc["id"] for doc in documents],
-
-    documents=[
-        doc["title"] + "\n" + doc["content"]
-        for doc in documents
-    ],
-
-    metadatas=[
-        {
-            "category": doc["category"],
-            "title": doc["title"],
-            "source": "company_documentation"
+    name="zorvex_technology",
+    configuration={
+        "hnsw": {
+            "space": "cosine",
         }
-        for doc in documents
-    ]
+    }
 )
 
-print("Successfully added documents!")
+zorvex_collection.upsert( #It will update if an Id is existing, otherwise it will insert a new record
+    ids=ids,
+    documents=documents,
+    embeddings=embeddings,
+)
 
-# 5. Check total documents
-print("Total documents:",
-      zorvex_collection.count())
 
+query = "When is the production deployment allowed ? "
+query_embdding = get_embedding(query)
 
-
-# Semantic search
 results = zorvex_collection.query(
-    query_texts=[
-        "How many days of maternity leave are available?"
-    ],
+    query_embeddings=[query_embdding],
     n_results=1
 )
 
-for document in results["documents"][0]:
-    print(document)
+print(results["documents"][0])
+
+
+
